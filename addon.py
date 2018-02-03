@@ -15,9 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, HTMLParser, sys
+from bs4 import BeautifulSoup
 from tools import *
 from xbmcgui import ListItem
-from BeautifulSoup import BeautifulSoup
+#from BeautifulSoup import BeautifulSoup
 
 versao = '0.0.4'
 addon_id = 'plugin.video.anitube'
@@ -59,7 +60,7 @@ def listGenres(url):
   soup = BeautifulSoup(htmlCode)
 
   aTags = []
-  genres = soup.findAll("a", { "class" : "list-group-item" })
+  genres = soup.find_all("a", { "class" : "list-group-item" })
   
   for genre in genres:
     #temp = [baseUrl + genre["href"],"%s" % (genre.string.encode('utf8', 'ignore'))]
@@ -132,7 +133,7 @@ def listEpisodes(url, view, modeId):
   soup = BeautifulSoup(htmlCode)
   
   a = []
-  genres = soup.findAll('div', { 'class' : 'well well-sm' })
+  genres = soup.find_all('div', { 'class' : 'well well-sm' })
   
   for genre in genres:
     try:
@@ -195,7 +196,7 @@ def resolveEpisode(url):
     
 def addPagingControls(htmlCode, modeId):
   soup = BeautifulSoup(htmlCode)
-  pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).findAll('a')
+  pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).find_all('a')
 
   for page in pages:
     if page.string == 'Primeiro':
@@ -233,10 +234,10 @@ def getAnimePlot(soup):
   plotElement = soup.find(itemprop = "description")
   plot = ''
     
-  try: plot = 'Ano: ' + yearElement.text + '\n'
+  try: plot = 'Ano: ' + yearElement.string + '\n'
   except: pass
   
-  try: plot += 'Sinopse: ' + plotElement.text
+  try: plot += 'Sinopse: ' + plotElement.string
   except: pass
   
   return plot
