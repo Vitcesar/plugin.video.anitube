@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, HTMLParser, sys
+import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys
 from bs4 import BeautifulSoup
-from tools import *
 from xbmcgui import ListItem
-#from BeautifulSoup import BeautifulSoup
 
 versao = '0.0.4'
 addon_id = 'plugin.video.anitube'
@@ -56,7 +54,7 @@ def  mainMenu ():
   xbmc.executebuiltin('Container.SetViewMode(' + shiftView + ')')
 
 def listGenres(url):
-  htmlCode = abrir_url(url)
+  htmlCode = openUrl(url)
   soup = BeautifulSoup(htmlCode)
 
   aTags = []
@@ -74,7 +72,7 @@ def listGenres(url):
   xbmc.executebuiltin('Container.SetViewMode(' + wideListView + ')')
   
 def listAnimesInitials(url, modeImage, modeName):
-  htmlCode = abrir_url(url)  
+  htmlCode = openUrl(url)  
   soup = BeautifulSoup(htmlCode)
 
   leters = soup.find("div", { "id" : "abasSingle" })
@@ -90,7 +88,7 @@ def listAnimesInitials(url, modeImage, modeName):
   xbmc.executebuiltin('Container.SetViewMode(' + wideListView + ')')
  
 def listAnimes(url):
-  htmlCode = abrir_url(url)  
+  htmlCode = openUrl(url)  
   
   pageTitle = re.compile('<title>(.+?)</title>').findall(htmlCode)
   
@@ -100,7 +98,7 @@ def listAnimes(url):
         
     for animeUrl, title, img in animeElements:
       animeUrl = baseUrl + animeUrl
-      animePageHtml = abrir_url(animeUrl)
+      animePageHtml = openUrl(animeUrl)
       animeSoup = BeautifulSoup(animePageHtml)
       plot = getAnimePlot(animeSoup)
       
@@ -129,7 +127,7 @@ def listAnimes(url):
   xbmc.executebuiltin('Container.SetViewMode(' + listView + ')')
 
 def listEpisodes(url, view, modeId):
-  htmlCode = abrir_url(url)
+  htmlCode = openUrl(url)
   soup = BeautifulSoup(htmlCode)
   
   a = []
@@ -164,11 +162,11 @@ def search():
     listEpisodes(url, '55', listEpsMode)
     
 def resolveEpisode(url):
-  htmlCode = abrir_url(url)  
+  htmlCode = openUrl(url)  
   match = re.compile('<br>\n<script type="text/javascript" src="(.+?)"></script>').findall(htmlCode)
   
   for url2 in match:
-    html2 = abrir_url(url2)
+    html2 = openUrl(url2)
     newMatch = re.compile("source: '(.+?)',").findall(html2)
     
   qualities = []
@@ -193,6 +191,15 @@ def resolveEpisode(url):
 ################################################
 #    Métodos auxiliares                        #
 ################################################
+
+def openUrl(url):
+	req = urllib2.Request(url)
+	req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+	response = urllib2.urlopen(req)
+	link = response.read()
+	response.close()
+  
+	return link
     
 def addPagingControls(htmlCode, modeId):
   soup = BeautifulSoup(htmlCode)
@@ -212,7 +219,7 @@ def addPagingControls(htmlCode, modeId):
       addDir('Última Página >>',   baseUrl + page['href'], modeId, artfolder + 'next.png', True, 1, 'Avançar para a última página.')
   
 def getAnimeData(url):
-  htmlCode = abrir_url(url)
+  htmlCode = openUrl(url)
   soup = BeautifulSoup(htmlCode)
 
   image = getAnimeImage(soup)
@@ -237,7 +244,7 @@ def getAnimePlot(soup):
   try: plot = 'Ano: ' + yearElement.string + '\n'
   except: pass
   
-  try: plot += 'Sinopse: ' + plotElement.string
+  try: plot += 'Sinopse: ' + plotElement.string.strip()
   except: pass
   
   return plot
