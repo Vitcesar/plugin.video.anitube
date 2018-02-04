@@ -35,13 +35,13 @@ listRecentEpsMode = 6
 listDubLettersMode = 7
 animesMode = 8
 
-listView = '0'
-posterView = '51'
-shiftView = '53'
-infoWallView = '54'
-wideListView = '55'
-wallView = '500'
-fanartView = '502'
+listView = 'Container.SetViewMode(0)'
+posterView = 'Container.SetViewMode(51)'
+shiftView = 'Container.SetViewMode(53)'
+infoWallView = 'Container.SetViewMode(54)'
+wideListView = 'Container.SetViewMode(55)'
+wallView = 'Container.SetViewMode(500)'
+fanartView = 'Container.SetViewMode(502)'
 
 def  mainMenu ():
   addDir('Recentes',   baseUrl + '/animes-lancamentos', listRecentEpsMode,  artfolder + 'new.png')
@@ -51,29 +51,22 @@ def  mainMenu ():
   addDir('Pesquisar',  baseUrl,                         searchMode,         artfolder + 'search.png')
   
   xbmcplugin.setContent(int(sys.argv[1]),'movies')
-  xbmc.executebuiltin('Container.SetViewMode(' + shiftView + ')')
+  xbmc.executebuiltin(shiftView)
 
 def listGenres(url):
   htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode)
-
-  aTags = []
-  genres = soup.find_all("a", { "class" : "list-group-item" })
   
-  for genre in genres:
-    #temp = [baseUrl + genre["href"],"%s" % (genre.string.encode('utf8', 'ignore'))]
-    temp = [baseUrl + genre["href"], genre["href"].split('/')[2].title()]
-    aTags.append(temp)
+  genres = re.compile('<a href="(.+?)" class="list-group-item"> <!-- <span class="badge"></span> --> (.+?)</li></a>').findall(htmlCode)
   
-  for genreUrl, genre in aTags:
-    addDir(genre, genreUrl, animesMode, artfolder + 'genres.png', True, len(aTags), 'Lista de animes da categoria ' + genre + '.')
+  for genreUrl, genreTitle in genres:
+    addDir(genreTitle, baseUrl + genreUrl, animesMode, artfolder + 'genres.png', True, len(genres), 'Lista de animes legendados na categoria de ' + genreTitle + '.')
     
   xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin('Container.SetViewMode(' + wideListView + ')')
+  xbmc.executebuiltin(wideListView)
   
 def listAnimesInitials(url, modeImage, modeName):
   htmlCode = openUrl(url)  
-  soup = BeautifulSoup(htmlCode)
+  soup = BeautifulSoup(htmlCode, "html.parser")
 
   leters = soup.find("div", { "id" : "abasSingle" })
   letersStr = str(leters)
@@ -85,28 +78,28 @@ def listAnimesInitials(url, modeImage, modeName):
     addDir(letter, animeListUrl, animesMode, modeImage, True, len(aTags), 'Lista de animes ' + modeName + ' começados por ' + letter + '.')
     
   xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin('Container.SetViewMode(' + wideListView + ')')
- 
+  xbmc.executebuiltin(wideListView)
+
+animesData = []
+  
 def listAnimes(url):
-  htmlCode = openUrl(url)  
+  htmlCode = openUrl(url)
+  soup = BeautifulSoup(htmlCode, "html.parser")
   
-  pageTitle = re.compile('<title>(.+?)</title>').findall(htmlCode)
+  pageTitle = soup.title.string
   
-  if 'Genero' in pageTitle[0]:
-    #regex for genres
-    animeElements = re.compile('<a class="internalUrl" href="(.+?)" title="(.+?)" rel="bookmark" itemprop="name">\n\t\t\t\t\t<img class="img-responsive" alt=".+?" title=".+?" src="(.+?)" itemprop="image">').findall(htmlCode)
+  if 'Genero' in pageTitle:
+    animes = soup.find_all('div', { 'class' : 'imagePlace' })
         
-    for animeUrl, title, img in animeElements:
-      animeUrl = baseUrl + animeUrl
+    for anime in animes:
+      animeUrl = baseUrl + anime.a['href']
       animePageHtml = openUrl(animeUrl)
-      animeSoup = BeautifulSoup(animePageHtml)
+      animeSoup = BeautifulSoup(animePageHtml, "html.parser")
       plot = getAnimePlot(animeSoup)
-      
-      img = baseUrl + img
-      
-      addDir(title, animeUrl, listEpsMode, img, True, len(animeElements), plot)
+           
+      addDir(anime.a['title'], animeUrl, listEpsMode, baseUrl + anime.img['src'], True, len(animes), plot)
     
-  if ('Anime' in pageTitle[0]) or ('Dublado' in pageTitle[0]):
+  if ('Anime' in pageTitle) or ('Dublado' in pageTitle):
     #regex for subbed and dubbed
     animeElements = re.compile('<a href="(.+?)" class="list-group-item"><span class="badge">(.+?)</span> (.+?)</li></a>').findall(htmlCode)
         
@@ -124,11 +117,11 @@ def listAnimes(url):
   addPagingControls(htmlCode, animesMode)
 
   xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin('Container.SetViewMode(' + listView + ')')
+  xbmc.executebuiltin(listView)
 
 def listEpisodes(url, view, modeId):
   htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode)
+  soup = BeautifulSoup(htmlCode, "html.parser")
   
   a = []
   genres = soup.find_all('div', { 'class' : 'well well-sm' })
@@ -141,6 +134,10 @@ def listEpisodes(url, view, modeId):
       pass
         
   for episodeUrl, title, img in a:
+    # Se o vídeo ainda estiver a ser processado pelo site e não der para reproduzir de imediato.
+    try: title = episode.find('div', { 'class' : 'label-private' }).string + title
+    except: pass
+  
     if 'http' not in img:
       img = baseUrl + img
     
@@ -149,7 +146,7 @@ def listEpisodes(url, view, modeId):
   addPagingControls(htmlCode, modeId)
   
   xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin('Container.SetViewMode(' + view + ')') 
+  xbmc.executebuiltin(view) 
 
 def search():
   keyb = xbmc.Keyboard('', 'Pesquisar...')
@@ -159,7 +156,7 @@ def search():
     search = keyb.getText()
     searchParameter = urllib.quote(search)
     url = baseUrl + '/busca/?search_query=' + str(searchParameter)
-    listEpisodes(url, '55', listEpsMode)
+    listEpisodes(url, wideListView, listEpsMode)
     
 def resolveEpisode(url):
   htmlCode = openUrl(url)  
@@ -193,16 +190,16 @@ def resolveEpisode(url):
 ################################################
 
 def openUrl(url):
-	req = urllib2.Request(url)
-	req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
-	response = urllib2.urlopen(req)
+	request = urllib2.Request(url)
+	request.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+	response = urllib2.urlopen(request)
 	link = response.read()
 	response.close()
   
 	return link
     
 def addPagingControls(htmlCode, modeId):
-  soup = BeautifulSoup(htmlCode)
+  soup = BeautifulSoup(htmlCode, "html.parser")
   pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).find_all('a')
 
   for page in pages:
@@ -220,7 +217,7 @@ def addPagingControls(htmlCode, modeId):
   
 def getAnimeData(url):
   htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode)
+  soup = BeautifulSoup(htmlCode, "html.parser")
 
   image = getAnimeImage(soup)
   plot = getAnimePlot(soup)
@@ -278,24 +275,24 @@ def addDir(name, url, mode, iconImage, pasta = True, total = 1, plot = ''):
 
 def getParams():
   param = []
-  paramstring = sys.argv[2]
+  paramString = sys.argv[2]
   
-  if len(paramstring) >= 2:
+  if len(paramString) >= 2:
     params = sys.argv[2]
-    cleanedparams = params.replace('?', '')
+    cleanedParams = params.replace('?', '')
     
     if (params[len(params) - 1] == '/'):
       params = params[0 : len(params) - 2]
     
-    pairsofparams = cleanedparams.split('&')
+    pairsOfParams = cleanedParams.split('&')
     param = { }
     
-    for i in range(len(pairsofparams)):
-      splitparams = { }
-      splitparams = pairsofparams[i].split('=')
+    for i in range(len(pairsOfParams)):
+      splitParams = { }
+      splitParams = pairsOfParams[i].split('=')
       
-      if (len(splitparams)) == 2:
-        param[splitparams[0]] = splitparams[1]
+      if (len(splitParams)) == 2:
+        param[splitParams[0]] = splitParams[1]
   
   return param
       
