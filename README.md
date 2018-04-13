@@ -1,4 +1,4 @@
-﻿# plugin.video.anitube - AniTube addon para o Kodi
+﻿# [plugin.video.anitube](https://github.com/Vitcesar/plugin.video.anitube/) - AniTube addon para o Kodi
 
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
