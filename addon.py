@@ -14,138 +14,140 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys
+import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata
 from bs4 import BeautifulSoup
 from xbmcgui import ListItem
 
-versao = '0.0.4'
+# Get the plugin url in plugin:// notation.
+__url__ = sys.argv[0]
+# Get the plugin handle as an integer number.
+__handle__ = int(sys.argv[1])
+
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 addon_id = 'plugin.video.anitube'
-selfAddon = xbmcaddon.Addon(id = addon_id)
-addonfolder = selfAddon.getAddonInfo('path')
-artfolder = addonfolder + '/resources/img/'
-fanart = addonfolder + '/fanart.jpg'
-baseUrl = 'http://anitubebr.biz'
+self_addon = xbmcaddon.Addon(id = addon_id)
+addon_folder = self_addon.getAddonInfo('path')
+icons_folder = addon_folder + '/resources/media/icons/'
+fanart = addon_folder + '/resources/fanart.jpg'
+base_url = 'http://anitubebr.biz'
 
-genresMode = 1
-listEpsMode = 2
-resolveEpMode = 3
-searchMode = 4
-listSubLettersMode = 5
-listRecentEpsMode = 6
-listDubLettersMode = 7
-animesMode = 8
+# Modes
+genres_mode = 1
+list_episodes_mode = 2
+resolve_episode_mode = 3
+search_mode = 4
+sort_subbed_mode = 5
+recent_episodes_mode = 6
+#sort_dubbed_mode = 7
+list_animes_mode = 8
 
-listView = 'Container.SetViewMode(0)'
-posterView = 'Container.SetViewMode(51)'
-shiftView = 'Container.SetViewMode(53)'
-infoWallView = 'Container.SetViewMode(54)'
-wideListView = 'Container.SetViewMode(55)'
-wallView = 'Container.SetViewMode(500)'
-fanartView = 'Container.SetViewMode(502)'
+# Estuary skin
+list_view = 'Container.SetViewMode(0)'
+poster_view = 'Container.SetViewMode(51)'
+shift_view = 'Container.SetViewMode(53)'
+info_wall_view = 'Container.SetViewMode(54)'
+wide_list_view = 'Container.SetViewMode(55)'
+wall_view = 'Container.SetViewMode(500)'
+fanart_view = 'Container.SetViewMode(502)'
 
-def  mainMenu ():
-  addDir('Recentes',   baseUrl + '/animes-lancamentos', listRecentEpsMode,  artfolder + 'new.png')
-  addDir('Legendados', baseUrl + '/anime',              listSubLettersMode, artfolder + 'sort.png')
-  addDir('Dublados',   baseUrl + '/animes-dublado',     listDubLettersMode, artfolder + 'dubbed.png')
-  addDir('Géneros',    baseUrl + '/genero',             genresMode,         artfolder + 'genres.png')
-  addDir('Pesquisar',  baseUrl,                         searchMode,         artfolder + 'search.png')
+def main_menu():
+  add_dir('Recentes',   base_url + '/animes-lancamentos', recent_episodes_mode, icons_folder + 'new.png')
+  add_dir('Legendados', base_url + '/anime',              sort_subbed_mode,     icons_folder + 'sort.png')
+  add_dir('Dublados',   base_url + '/animes-dublado',     list_animes_mode,     icons_folder + 'dubbed.png')
+  add_dir('Géneros',    base_url + '/genero',             genres_mode,          icons_folder + 'genres.png')
+  add_dir('Pesquisar',  base_url,                         search_mode,          icons_folder + 'search.png')
   
-  xbmcplugin.setContent(int(sys.argv[1]),'movies')
-  xbmc.executebuiltin(shiftView)
+  xbmcplugin.setContent(__handle__,'tvshows')
+  xbmc.executebuiltin(shift_view)
 
-def listGenres(url):
-  htmlCode = openUrl(url)
+def list_genres(url):
+  html_code = open_url(url)
   
-  genres = re.compile('<a href="(.+?)" class="list-group-item"> <!-- <span class="badge"></span> --> (.+?)</li></a>').findall(htmlCode)
+  genres = re.compile('<a href="(.+?)" class="list-group-item"> (.+?)</li></a>').findall(html_code)
   
-  for genreUrl, genreTitle in genres:
-    addDir(genreTitle, baseUrl + genreUrl, animesMode, artfolder + 'genres.png', True, len(genres), 'Lista de animes legendados na categoria de ' + genreTitle + '.')
+  for genre_url, genre_title in genres:
+    add_dir(genre_title, base_url + genre_url, list_animes_mode, icons_folder + 'genres.png', True, len(genres), 'Lista de animes legendados na categoria de ' + genre_title + '.')
     
-  xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin(wideListView)
+  xbmcplugin.setContent(__handle__, 'tvshows')
+  xbmc.executebuiltin(wide_list_view)
   
-def listAnimesInitials(url, modeImage, modeName):
-  htmlCode = openUrl(url)  
-  soup = BeautifulSoup(htmlCode, "html.parser")
+def list_anime_initials(url, mode_icon, mode_name):
+  html_code = open_url(url)  
+  soup = BeautifulSoup(html_code, 'html.parser')
 
-  leters = soup.find("div", { "id" : "abasSingle" })
-  letersStr = str(leters)
+  leters = soup.find('div', { 'id' : 'abasSingle' })
+  leters_string = str(leters)
   
-  aTags = re.compile('<a href="(.+?)">(.+?)</a>').findall(letersStr)
+  a_tags = re.compile('<a href="(.+?)">(.+?)</a>').findall(leters_string)
     
-  for animeListUrl, letter in aTags:
-    animeListUrl = baseUrl + animeListUrl
-    addDir(letter, animeListUrl, animesMode, modeImage, True, len(aTags), 'Lista de animes ' + modeName + ' começados por ' + letter + '.')
+  for anime_list_url, letter in a_tags:
+    anime_list_url = base_url + anime_list_url
+    add_dir(letter, anime_list_url, list_animes_mode, mode_icon, True, len(a_tags), 'Lista de animes ' + mode_name + ' começados por ' + letter + '.')
     
-  xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin(wideListView)
+  xbmcplugin.setContent(__handle__, 'tvshows')
+  xbmc.executebuiltin(wide_list_view)
 
 animesData = []
   
-def listAnimes(url):
-  htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode, "html.parser")
+def list_animes(url):
+  html_code = open_url(url)
+  soup = BeautifulSoup(html_code, 'html.parser')
   
-  pageTitle = soup.title.string
+  page_title = soup.title.string
   
-  if 'Genero' in pageTitle:
+  if 'Genero' in page_title:
     animes = soup.find_all('div', { 'class' : 'imagePlace' })
         
     for anime in animes:
-      animeUrl = baseUrl + anime.a['href']
-      animePageHtml = openUrl(animeUrl)
-      animeSoup = BeautifulSoup(animePageHtml, "html.parser")
-      plot = getAnimePlot(animeSoup)
-           
-      addDir(anime.a['title'], animeUrl, listEpsMode, baseUrl + anime.img['src'], True, len(animes), plot)
+      anime_url = base_url + anime.a['href']
+      title = anime.a['title']
+      
+      add_dir(title, anime_url, list_episodes_mode, base_url + anime.img['src'], total_items = len(animes))
     
-  if ('Anime' in pageTitle) or ('Dublado' in pageTitle):
-    #regex for subbed and dubbed
-    animeElements = re.compile('<a href="(.+?)" class="list-group-item"><span class="badge">(.+?)</span> (.+?)</li></a>').findall(htmlCode)
+  if ('Anime' in page_title) or ('Dublado' in page_title):
+    anime_elements = re.compile('<a href="(.+?)" class="list-group-item"><span class="badge">(.+?)</span> (.+?)</li></a>').findall(html_code)
         
-    for animeUrl, numEpisodes, title in animeElements:
-      if numEpisodes != '0':
-        title = title + ' (' + numEpisodes + ' Episódios)'
-        
-        animeUrl = baseUrl + animeUrl
-        animeData = getAnimeData(animeUrl)
-        img = animeData[0]
-        plot = animeData[1]
-        
-        addDir(title, animeUrl, listEpsMode, img, True, len(animeElements), plot)
+    for anime_url, num_episodes, title in anime_elements:
+      if num_episodes != '0':
+        title = title + ' ([COLOR blue]' + num_episodes + ' Episódios[/COLOR])'
+        anime_url = base_url + anime_url
+        add_dir(title, anime_url, list_episodes_mode, total_items = len(anime_elements))
     
-  addPagingControls(htmlCode, animesMode)
+    if 'Dublado' not in page_title:
+      add_paging(soup, url, list_animes_mode)
 
-  xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-  xbmc.executebuiltin(listView)
+  xbmcplugin.setContent(__handle__, 'tvshows')
+  xbmc.executebuiltin(wide_list_view)
 
-def listEpisodes(url, view, modeId):
-  htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode, "html.parser")
+def list_episodes(url, view, mode):
+  html_code = open_url(url)
+  soup = BeautifulSoup(html_code, 'html.parser')
   
-  a = []
-  genres = soup.find_all('div', { 'class' : 'well well-sm' })
+  try:
+    list_item = create_anime_list_item(html_code)
+    add_link(None, list_item)
+  except IndexError: pass
   
-  for genre in genres:
-    try:
-      temp = [baseUrl + genre.a['href'], '%s' % (genre.a.img['title'].encode('utf8', 'ignore')), genre.a.img['src']] 
-      a.append(temp)
-    except:
-      pass
-        
-  for episodeUrl, title, img in a:
-    # Se o vídeo ainda estiver a ser processado pelo site e não der para reproduzir de imediato.
-    try: title = episode.find('div', { 'class' : 'label-private' }).string + title
-    except: pass
+  episodes = soup.find_all('div', { 'class' : 'col-sm-6 col-md-4 col-lg-4' })
+  
+  for episode in episodes:
+    episode_url = base_url + episode.a['href']
+    title = episode.a.img['title']
+    img = episode.a.img['src']
+    
+    try: title = '[COLOR red]' + episode.find_all('div', { 'class' : 'label-private' })[0].string + '[/COLOR] ' + title
+    except IndexError: pass
   
     if 'http' not in img:
-      img = baseUrl + img
+      img = base_url + img
     
-    addDir(title, episodeUrl, resolveEpMode, img, False, len(a), title)
+    add_dir(title, episode_url, resolve_episode_mode, img, False, 1, title)
     
-  addPagingControls(htmlCode, modeId)
+  add_paging(soup, url, mode)
   
-  xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+  xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(view) 
 
 def search():
@@ -154,42 +156,45 @@ def search():
   
   if (keyb.isConfirmed()):
     search = keyb.getText()
-    searchParameter = urllib.quote(search)
-    url = baseUrl + '/busca/?search_query=' + str(searchParameter)
-    listEpisodes(url, wideListView, listEpsMode)
+    search_parameter = urllib.quote(search)
+    url = base_url + '/busca/?search_query=' + str(search_parameter)
+    list_episodes(url, wide_list_view, list_episodes_mode)
     
-def resolveEpisode(url):
-  htmlCode = openUrl(url)  
-  match = re.compile('<br>\n<script type="text/javascript" src="(.+?)"></script>').findall(htmlCode)
+def resolve_episode(episode_page_url):
+  html_code = open_url(episode_page_url)
   
-  for url2 in match:
-    html2 = openUrl(url2)
-    newMatch = re.compile("source: '(.+?)',").findall(html2)
+  script_src = re.compile('<br>\n<script type="text/javascript" src="(.+?)"></script>').findall(html_code)
+  
+  for script_url in script_src:
+    script_code = open_url(script_url)
+    file_links = re.compile("source: '(.+?)'").findall(script_code)
     
   qualities = []
   
   try: 
-    hdFileUrl = newMatch[1]
-    qualities.append("HD")
-  except: 
-    pass
+    hd_file_url = file_links[1]
+    qualities.append('HD')
+  except: pass
   
-  try: 
-    sdFileUrl = newMatch[0]
-    qualities.append("SD")
-  except: 
-    pass
+  try:
+    sd_file_url = file_links[0]
+    qualities.append('SD')
+  except: pass
   
-  quality = xbmcgui.Dialog().select('Escolha a qualidade', qualities)
+  quality = xbmcgui.Dialog().select('Escolha a qualidade:', qualities)
   
-  if quality == 0: xbmc.Player().play(hdFileUrl)
-  if quality == 1: xbmc.Player().play(sdFileUrl)   
+  if quality == 0: 
+    list_item = create_episode_list_item(html_code, hd_file_url)
+    xbmc.Player().play(hd_file_url, list_item)
+  if quality == 1: 
+    list_item = create_episode_list_item(html_code, sd_file_url)
+    xbmc.Player().play(sd_file_url, list_item)
   
 ################################################
-#    Métodos auxiliares                        #
+#              Aux Methods                     #
 ################################################
 
-def openUrl(url):
+def open_url(url):
 	request = urllib2.Request(url)
 	request.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
 	response = urllib2.urlopen(request)
@@ -198,151 +203,203 @@ def openUrl(url):
   
 	return link
     
-def addPagingControls(htmlCode, modeId):
-  soup = BeautifulSoup(htmlCode, "html.parser")
+def add_paging(soup, url, mode):
+  current_page = get_page_number_from_url(url)
+  
   pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).find_all('a')
-
+  
+  for page in pages:
+    if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Último'):
+      last_page = get_page_number_from_url(page['href'])
+  
   for page in pages:
     if page.string == 'Primeiro':
-      addDir('<< Primeira Página', baseUrl + page['href'], modeId, artfolder + 'prev.png', True, 1, 'Voltar para a primeira página.')
+      title = '<< Primeira Página ([COLOR blue]' + str(current_page) + '/' + str(last_page) + '[/COLOR])'
+      add_dir(title, base_url + page['href'], mode, icons_folder + 'prev.png', True, 1, 'Voltar para a primeira página.')
     
     if page.string == 'Voltar':
-      addDir('< Página Anterior',  baseUrl + page['href'], modeId, artfolder + 'prev.png', True, 1, 'Voltar para a página anterior.')
+      title = '< Página Anterior ([COLOR blue]' + str(current_page) + '/' + str(last_page) + '[/COLOR])'
+      add_dir(title, base_url + page['href'], mode, icons_folder + 'prev.png', True, 1, 'Voltar para a página anterior.')
     
     if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Avançar'):
-      addDir('Página Seguinte >',  baseUrl + page['href'], modeId, artfolder + 'next.png', True, 1, 'Avançar para a página seguinte.')
+      title = 'Página Seguinte > ([COLOR blue]' + str(current_page) + '/' + str(last_page) + '[/COLOR])'
+      add_dir(title, base_url + page['href'], mode, icons_folder + 'next.png', True, 1, 'Avançar para a página seguinte.')
     
     if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Último'):
-      addDir('Última Página >>',   baseUrl + page['href'], modeId, artfolder + 'next.png', True, 1, 'Avançar para a última página.')
-  
-def getAnimeData(url):
-  htmlCode = openUrl(url)
-  soup = BeautifulSoup(htmlCode, "html.parser")
+      title = 'Última Página >> ([COLOR blue]' + str(current_page) + '/' + str(last_page) + '[/COLOR])'
+      add_dir(title, base_url + page['href'], mode, icons_folder + 'next.png', True, 1, 'Avançar para a última página.')
 
-  image = getAnimeImage(soup)
-  plot = getAnimePlot(soup)
+def get_page_number_from_url(url):
+  url_splited = url.split('/')
+  
+  for i, string in enumerate(url_splited):
+    if string == 'page':
+      return url_splited[i+1]
+      
+  return 1
+  
+def create_episode_list_item(html_code, url):
+  soup = BeautifulSoup(html_code, 'html.parser')
 
-  return (image, plot)
+  title = soup.find_all('meta', { 'itemprop' : 'description' })[0]['content']
+  dateadded = soup.find_all('meta', { 'itemprop' : 'uploadDate' })[0]['content']
+  genre = soup.find_all('meta', { 'itemprop' : 'genre' })[0]['content']
+  image = soup.find_all('meta', { 'itemprop' : 'thumbnailUrl' })[0]['content']
   
-def getAnimeImage(soup):
-  imageElement = soup.find(itemprop = "thumbnailUrl")  
-  image = ''
+  try: tracknumber = int(soup.find_all('meta', { 'property' : 'og:url' })[0]['content'].strip('/').split('/')[-1])
+  except ValueError: tracknumber = None
   
-  try: image = imageElement['content']
-  except: pass
+  duration_seconds = soup.find_all('meta', { 'property' : 'video:duration' })[0]['content']
+  duration_minutes = time.strftime('%M:%S', time.gmtime(float(duration_seconds)))
   
-  return image
-  
-def getAnimePlot(soup):
-  yearElement = soup.find(itemprop = "copyrightYear")
-  plotElement = soup.find(itemprop = "description")
-  plot = ''
+  try: 
+    episode_number = int(title.split(' ')[-1])
+  except ValueError:
+    try:
+      episode_number = int(title.split(' ')[-2])
+    except (ValueError, IndexError): 
+      episode_number = None
     
-  try: plot = 'Ano: ' + yearElement.string + '\n'
-  except: pass
+  list_item = xbmcgui.ListItem(title, path = url, thumbnailImage = image)
+  list_item.setInfo('video', {'title': title,
+                              'tvshowtitle': title,
+                              'originaltitle': title,
+                              'sorttitle': title,
+                              'genre': genre,
+                              'episode': episode_number,
+                              'duration': duration_minutes,
+                              'dateadded': dateadded,
+                              'tracknumber': tracknumber
+                             })
+                            
+  return list_item
+
+def create_anime_list_item(html_code):
+  soup = BeautifulSoup(html_code, 'html.parser')
+
+  title = soup.find_all('span', { 'itemprop' : 'name' })[0].string
+  year = soup.find_all('span', { 'itemprop' : 'copyrightYear' })[0].string
+  studio = soup.find_all('span', { 'itemprop' : 'productionCompany' })[0].string
+  writer = soup.find_all('span', { 'itemprop' : 'author' })[0].string
+  image = soup.find_all('img', { 'class' : ' img-hover' })[0]['src']
+  status = re.compile('<p><b>Status:</b>(.+?)</p>').findall(html_code)[0]
+  plot = soup.find_all('span', { 'itemprop' : 'description' })[0].text
   
-  try: plot += 'Sinopse: ' + plotElement.string.strip()
-  except: pass
+  genre_list = soup.find_all('span', { 'itemprop' : 'genre' })[0].contents
+  genres_string = ''
   
-  return plot
+  for genre in genre_list:
+    genres_string += genre.string
+    
+  list_item = xbmcgui.ListItem('[COLOR red][B]INFO[/B][/COLOR] ' + title + ' ([COLOR blue]' + year + '[/COLOR])', thumbnailImage = image)
+  list_item.setProperty('fanart_image', fanart)
+  list_item.setInfo('video', {'title': title,
+                              'tvshowtitle': title,
+                              'originaltitle': title,
+                              'sorttitle': title,
+                              'genre': genres_string,
+                              'year': year,
+                              'status': status,
+                              'studio': studio,
+                              'writer': writer,
+                              'plot': plot,
+                              'plotoutline': plot,
+                              'tagline': '[B]Estado:[/B]' + status + '\n[B]Género: [/B]' + genres_string
+                             })
+                            
+  return list_item
 
 ################################################
-#    Funções relacionadas a media.             #
+#            Media Methods                     #
 ################################################
 
-def addLink(name, url, iconImage, plot):
+#def add_link(name, url, image, plot):
+#  ok = True
+#  item = xbmcgui.ListItem(name, iconImage = 'DefaultVideo.png', thumbnailImage = image)
+#  item.setProperty('fanart_image', fanart)
+#  item.setInfo(type = 'Video', infoLabels = { 'Title' : name, 'Plot' : plot } )
+#  ok = xbmcplugin.addDirectoryItem(handle = __handle__, url = url, listitem = item)
+#  
+#  return ok
+  
+def add_link(url, list_item):
   ok = True
-  liz = xbmcgui.ListItem(name, iconImage = "DefaultVideo.png", thumbnailImage = iconImage)
-  liz.setProperty('fanart_image', fanart)
-  liz.setInfo(type = "Video", infoLabels = { "Title" : name, "Plot" : plot } )
-  ok = xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = url, listitem = liz)
+  ok = xbmcplugin.addDirectoryItem(handle = __handle__, url = url, listitem = list_item)
   
   return ok
 
-def addDir(name, url, mode, iconImage, pasta = True, total = 1, plot = ''):
-  u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(name)
+def add_dir(name, url, mode, image = '', is_folder = True, total_items = 1, plot = ''):
+  try: link = __url__ + '?url=' + urllib.quote_plus(url) + '&mode=' + str(mode) + '&name=' + urllib.quote_plus(name)
+  except KeyError: link = __url__ + '?url=' + urllib.quote_plus(url) + '&mode=' + str(mode) + '&name=' + urllib.quote_plus(name.encode('utf8'))
+  
   ok = True
-  liz = xbmcgui.ListItem(name, iconImage = "DefaultFolder.png", thumbnailImage = iconImage)
-  liz.setProperty('fanart_image', fanart)
-  liz.setInfo(type="video", infoLabels={ "title" : name, "plot" : plot })
-  ok = xbmcplugin.addDirectoryItem(handle = int(sys.argv[1]), url = u, listitem = liz, isFolder = pasta, totalItems = total)
+  item = xbmcgui.ListItem(name, iconImage = 'DefaultFolder.png', thumbnailImage = image)
+  item.setProperty('fanart_image', fanart)
+  
+  if not plot: plot = name
+  
+  item.setInfo(type='video', infoLabels={ 'title' : name, 'plot' : plot })
+  ok = xbmcplugin.addDirectoryItem(handle = __handle__, url = link, listitem = item, isFolder = is_folder, totalItems = total_items)
   
   return ok
   
 ################################################
-#    Pega os parametros                        #
+#               Get Parameters                 #
 ################################################
 
-def getParams():
+def get_params():
   param = []
-  paramString = sys.argv[2]
+  param_string = sys.argv[2]
   
-  if len(paramString) >= 2:
+  if len(param_string) >= 2:
     params = sys.argv[2]
-    cleanedParams = params.replace('?', '')
+    cleaned_params = params.replace('?', '')
     
     if (params[len(params) - 1] == '/'):
       params = params[0 : len(params) - 2]
     
-    pairsOfParams = cleanedParams.split('&')
+    pairs_of_params = cleaned_params.split('&')
     param = { }
     
-    for i in range(len(pairsOfParams)):
-      splitParams = { }
-      splitParams = pairsOfParams[i].split('=')
+    for i in range(len(pairs_of_params)):
+      splited_params = { }
+      splited_params = pairs_of_params[i].split('=')
       
-      if (len(splitParams)) == 2:
-        param[splitParams[0]] = splitParams[1]
+      if (len(splited_params)) == 2:
+        param[splited_params[0]] = splited_params[1]
   
   return param
       
-params = getParams()
+params = get_params()
 url = None
 name = None
 mode = None
-iconImage = None
+icon_image = None
 
-try: url = urllib.unquote_plus(params["url"])
+try: url = urllib.unquote_plus(params['url'])
 except: pass
 
-try: name = urllib.unquote_plus(params["name"])
+try: name = urllib.unquote_plus(params['name'])
 except: pass
         
-try: mode = int(params["mode"])
+try: mode = int(params['mode'])
 except: pass
 
-try: iconImage = urllib.unquote_plus(params["iconImage"])
+try: icon_image = urllib.unquote_plus(params['iconImage'])
 except: pass
 
 ################################################
-#    Destina para cada modo.                   #
+#                  Modes                       #
 ################################################
 
-# Menu Inicial
-if mode == None or url == None or len(url) < 1: mainMenu() 
-
-# Géneros
-elif mode == 1: listGenres(url) 
-
-# Listar Episódios
-elif mode == 2: listEpisodes(url, wideListView, listEpsMode) 
-
-# Listar Qualidades & Play
-elif mode == 3: resolveEpisode(url) 
-
-# Pesquisar
+if mode == None or url == None or len(url) < 1: main_menu() 
+elif mode == 1: list_genres(url) 
+elif mode == 2: list_episodes(url, list_view, list_episodes_mode) 
+elif mode == 3: resolve_episode(url) 
 elif mode == 4: search()
+elif mode == 5: list_anime_initials(url, icons_folder + 'sort.png', 'legendados') 
+elif mode == 6: list_episodes(url, wall_view, recent_episodes_mode)
+#elif mode == 7: list_anime_initials(url, icons_folder + 'dubbed.png', 'dublados') 
+elif mode == 8: list_animes(url) 
 
-# Listar Letras (Legendados)
-elif mode == 5: listAnimesInitials(url, artfolder + 'sort.png', 'legendados') 
-
-# Episódios Recentes
-elif mode == 6: listEpisodes(url, wallView, listRecentEpsMode)
-
-# Listar Letras (Dublados)
-elif mode == 7: listAnimesInitials(url, artfolder + 'dubbed.png', 'dublados') 
-
-# Listar Animes
-elif mode == 8: listAnimes(url) 
-
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+xbmcplugin.endOfDirectory(__handle__)

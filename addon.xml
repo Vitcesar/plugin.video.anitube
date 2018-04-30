@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.anitube" name="AniTube Brasil" version="0.0.4" provider-name="hgarcia, eseffair, Mafarricos, vitcesar">
+<addon id="plugin.video.anitube" name="Anitube" version="0.0.6" provider-name="hgarcia, eseffair, Mafarricos, vitcesar">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
@@ -8,20 +8,23 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary lang="en">Addon AniTube Brasil</summary>
-    <description lang="en">AniTube Brasil é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.</description>
+    
+    <summary lang="en">Addon Anitube</summary>
+    <description lang="en">Anitube é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.</description>
     <disclaimer lang="en">O autor não hospeda nem distribui nenhum dos conteúdos exibidos por este addon. O autor não possui nenhuma afiliação com o provedor do conteúdo.</disclaimer>
-		<summary lang="pt">Addon AniTube Brasil</summary>
-    <description lang="pt">AniTube Brasil é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.</description>
+		
+    <summary lang="pt">Addon Anitube</summary>
+    <description lang="pt">Anitube é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.</description>
     <disclaimer lang="pt">O autor não hospeda nem distribui nenhum dos conteúdos exibidos por este addon. O autor não possui nenhuma afiliação com o provedor do conteúdo.</disclaimer>
-		<source>https://github.com/vitcesar/plugin.video.anitube</source>
+		
+    <source>https://github.com/vitcesar/plugin.video.anitube</source>
     <platform>all</platform>
 		<assets>
-			<icon>icon.png</icon>
-			<fanart>fanart.jpg</fanart>
-    			<screenshot>resources/screenshots/screenshot-01.png</screenshot>
-    			<screenshot>resources/screenshots/screenshot-02.png</screenshot>
-    			<screenshot>resources/screenshots/screenshot-03.png</screenshot>
+			<icon>resources/icon.png</icon>
+			<fanart>resources/fanart.jpg</fanart>
+    			<screenshot>resources/media/screenshots/screenshot-01.png</screenshot>
+    			<screenshot>resources/media/screenshots/screenshot-02.png</screenshot>
+    			<screenshot>resources/media/screenshots/screenshot-03.png</screenshot>
 		</assets>
   </extension>
 </addon>
