@@ -115,8 +115,7 @@ def list_animes(url):
         anime_url = base_url + anime_url
         add_dir(title, anime_url, list_episodes_mode, total_items = len(anime_elements))
     
-    if 'Dublado' not in page_title:
-      add_paging(soup, url, list_animes_mode)
+  add_paging(soup, url, list_animes_mode)
 
   xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(wide_list_view)
@@ -204,13 +203,15 @@ def open_url(url):
 	return link
     
 def add_paging(soup, url, mode):
-  current_page = get_page_number_from_url(url)
-  
   pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).find_all('a')
   
   for page in pages:
     if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Último'):
       last_page = get_page_number_from_url(page['href'])
+      
+  if last_page == '1': return
+
+  current_page = get_page_number_from_url(url)
   
   for page in pages:
     if page.string == 'Primeiro':
