@@ -287,10 +287,11 @@ def create_anime_list_item(html_code):
   plot = soup.find_all('span', { 'itemprop' : 'description' })[0].text
   
   genre_list = soup.find_all('span', { 'itemprop' : 'genre' })[0].contents
-  genres_string = ''
+  genres = []
   
   for genre in genre_list:
-    genres_string += genre.string
+    genre_string = genre.string
+    if not genre_string.isspace(): genres.append(genre_string)
     
   list_item = xbmcgui.ListItem('[COLOR red][B]INFO[/B][/COLOR] ' + title + ' ([COLOR blue]' + year + '[/COLOR])', thumbnailImage = image)
   list_item.setProperty('fanart_image', fanart)
@@ -298,14 +299,14 @@ def create_anime_list_item(html_code):
                               'tvshowtitle': title,
                               'originaltitle': title,
                               'sorttitle': title,
-                              'genre': genres_string,
+                              'genre': genres,
                               'year': year,
                               'status': status,
                               'studio': studio,
                               'writer': writer,
                               'plot': plot,
                               'plotoutline': plot,
-                              'tagline': '[B]Estado:[/B]' + status + '\n[B]Género: [/B]' + genres_string
+                              'tagline': '[B]Estado:[/B]' + status + '\n[B]Género: [/B]' + ''.join(genres)
                              })
                             
   return list_item
