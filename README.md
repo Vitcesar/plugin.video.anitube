@@ -2,6 +2,8 @@
 
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+**Atenção:** Em versões anteriores a 16-Jun-18 a reprodução dos vídeos não funciona. Por favor atualizar para a mais recente.
+
 [AniTube Brasil](http://anitubebr.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
 Este addon foi corrigido a atualizado a partir da versão dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
 
