@@ -31,7 +31,7 @@ self_addon = xbmcaddon.Addon(id = addon_id)
 addon_folder = self_addon.getAddonInfo('path')
 icons_folder = addon_folder + '/resources/media/icons/'
 fanart = addon_folder + '/resources/fanart.jpg'
-base_url = 'http://anitubebr.biz'
+base_url = 'http://anitubebr.com'
 
 # Modes
 genres_mode = 1
@@ -55,8 +55,9 @@ fanart_view = 'Container.SetViewMode(502)'
 def main_menu():
   add_dir('Recentes',   base_url + '/animes-lancamentos', recent_episodes_mode, icons_folder + 'new.png')
   add_dir('Legendados', base_url + '/anime',              sort_subbed_mode,     icons_folder + 'sort.png')
-  add_dir('Dublados',   base_url + '/animes-dublado',     list_animes_mode,     icons_folder + 'dubbed.png')
   add_dir('Géneros',    base_url + '/genero',             genres_mode,          icons_folder + 'genres.png')
+  add_dir('Dublados',   base_url + '/animes-dublado',     list_animes_mode,     icons_folder + 'dubbed.png')
+  add_dir('Tokusatsu',  base_url + '/tokusatsu',          list_animes_mode,     icons_folder + 'tokusatsu.png')
   add_dir('Pesquisar',  base_url,                         search_mode,          icons_folder + 'search.png')
   
   xbmcplugin.setContent(__handle__,'tvshows')
@@ -89,8 +90,6 @@ def list_anime_initials(url, mode_icon, mode_name):
   xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(wide_list_view)
 
-animesData = []
-  
 def list_animes(url):
   html_code = open_url(url)
   soup = BeautifulSoup(html_code, 'html.parser')
@@ -106,7 +105,7 @@ def list_animes(url):
       
       add_dir(title, anime_url, list_episodes_mode, base_url + anime.img['src'], total_items = len(animes))
     
-  if ('Anime' in page_title) or ('Dublado' in page_title):
+  if ('Anime' in page_title) or ('Dublado' in page_title) or ('Tokusatsu' in page_title):
     anime_elements = re.compile('<a href="(.+?)" class="list-group-item"><span class="badge">(.+?)</span> (.+?)</li></a>').findall(html_code)
         
     for anime_url, num_episodes, title in anime_elements:
@@ -179,14 +178,19 @@ def resolve_episode(episode_page_url):
     sd_file_url = file_links[0]
     qualities.append('SD')
   except: pass
+    
+  quality = xbmcgui.Dialog().select('Escolha a qualidade:', ['HD', 'SD'])
   
-  quality = xbmcgui.Dialog().select('Escolha a qualidade:', qualities)
+  hd_file_url = file_links[1]
+  sd_file_url = file_links[0]
   
   if quality == 0: 
     list_item = create_episode_list_item(html_code, hd_file_url)
+    hd_file_url = hd_file_url + '|Referer=' + base_url
     xbmc.Player().play(hd_file_url, list_item)
   if quality == 1: 
     list_item = create_episode_list_item(html_code, sd_file_url)
+    sd_file_url = sd_file_url + '|Referer=' + base_url
     xbmc.Player().play(sd_file_url, list_item)
   
 ################################################
@@ -195,7 +199,7 @@ def resolve_episode(episode_page_url):
 
 def open_url(url):
 	request = urllib2.Request(url)
-	request.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+	request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0')
 	response = urllib2.urlopen(request)
 	link = response.read()
 	response.close()
@@ -243,12 +247,13 @@ def create_episode_list_item(html_code, url):
   soup = BeautifulSoup(html_code, 'html.parser')
 
   title = soup.find_all('meta', { 'itemprop' : 'description' })[0]['content']
+  tvshowtitle = anime_elements = re.compile('<b>Categoria do Anime:</b> <a href=".+?" class="tag">(.+?)</a>').findall(html_code)[0]
   dateadded = soup.find_all('meta', { 'itemprop' : 'uploadDate' })[0]['content']
-  genre = soup.find_all('meta', { 'itemprop' : 'genre' })[0]['content']
+  genre = soup.find_all('meta', { 'itemprop' : 'genre' })[0]['content'].strip(',')
   image = soup.find_all('meta', { 'itemprop' : 'thumbnailUrl' })[0]['content']
   
-  try: tracknumber = int(soup.find_all('meta', { 'property' : 'og:url' })[0]['content'].strip('/').split('/')[-1])
-  except ValueError: tracknumber = None
+  try: episode_id = int(soup.find_all('meta', { 'property' : 'og:url' })[0]['content'].strip('/').split('/')[-1])
+  except ValueError: episode_id = None
   
   duration_seconds = soup.find_all('meta', { 'property' : 'video:duration' })[0]['content']
   duration_minutes = time.strftime('%M:%S', time.gmtime(float(duration_seconds)))
@@ -260,17 +265,28 @@ def create_episode_list_item(html_code, url):
       episode_number = int(title.split(' ')[-2])
     except (ValueError, IndexError): 
       episode_number = None
+      
+  try: season_number = re.compile('.+?\sS(\d)[\s$]').findall(title)[0]
+  except IndexError: season_number = 1
     
   list_item = xbmcgui.ListItem(title, path = url, thumbnailImage = image)
   list_item.setInfo('video', {'title': title,
-                              'tvshowtitle': title,
+                              'tvshowtitle': tvshowtitle,
                               'originaltitle': title,
                               'sorttitle': title,
                               'genre': genre,
+                              'tag': genre,
                               'episode': episode_number,
+                              'sortepisode': episode_number,
+                              'season': season_number,
+                              'sortseason': season_number,
                               'duration': duration_minutes,
                               'dateadded': dateadded,
-                              'tracknumber': tracknumber
+                              'overlay': 5,
+                              'playcount': 1,
+                              'mediatype': 'episode',
+                              'setid': episode_id,
+                              'tracknumber': episode_id
                              })
                             
   return list_item
@@ -291,7 +307,7 @@ def create_anime_list_item(html_code):
   
   for genre in genre_list:
     genre_string = genre.string
-    if not genre_string.isspace(): genres.append(genre_string)
+    if not genre_string.isspace(): genres.append(genre_string.strip(','))
     
   list_item = xbmcgui.ListItem('[COLOR red][B]INFO[/B][/COLOR] ' + title + ' ([COLOR blue]' + year + '[/COLOR])', thumbnailImage = image)
   list_item.setProperty('fanart_image', fanart)
@@ -300,13 +316,16 @@ def create_anime_list_item(html_code):
                               'originaltitle': title,
                               'sorttitle': title,
                               'genre': genres,
+                              'tag': genres,
                               'year': year,
+                              'premiered': year + '-00-00',
                               'status': status,
                               'studio': studio,
                               'writer': writer,
                               'plot': plot,
                               'plotoutline': plot,
-                              'tagline': '[B]Estado:[/B]' + status + '\n[B]Género: [/B]' + ''.join(genres)
+                              'mediatype': 'tvshow',
+                              'tagline': '[B]Estado:[/B]' + status + '\n[B]Género: [/B]' + ', '.join(genres)
                              })
                             
   return list_item
