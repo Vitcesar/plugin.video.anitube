@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata
+import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata, random, string
 from bs4 import BeautifulSoup
 from xbmcgui import ListItem
 
@@ -42,6 +42,7 @@ sort_subbed_mode = 5
 recent_episodes_mode = 6
 #sort_dubbed_mode = 7
 list_animes_mode = 8
+random_anime_mode = 9
 
 # Estuary skin
 list_view = 'Container.SetViewMode(0)'
@@ -59,6 +60,7 @@ def main_menu():
   add_dir('Dublados',   base_url + '/animes-dublado',     list_animes_mode,     icons_folder + 'dubbed.png')
   add_dir('Tokusatsu',  base_url + '/tokusatsu',          list_animes_mode,     icons_folder + 'tokusatsu.png')
   add_dir('Pesquisar',  base_url,                         search_mode,          icons_folder + 'search.png')
+  add_dir('Random',     base_url,                         random_anime_mode,    icons_folder + 'random.png')
   
   xbmcplugin.setContent(__handle__,'tvshows')
   xbmc.executebuiltin(shift_view)
@@ -158,6 +160,10 @@ def search():
     url = base_url + '/busca/?search_query=' + str(search_parameter)
     list_episodes(url, wide_list_view, list_episodes_mode)
     
+def random_anime():
+  url = get_random_anime_url();
+  list_episodes(url, list_view, list_episodes_mode)
+    
 def resolve_episode(episode_page_url):
   html_code = open_url(episode_page_url)
   
@@ -179,10 +185,7 @@ def resolve_episode(episode_page_url):
     qualities.append('SD')
   except: pass
     
-  quality = xbmcgui.Dialog().select('Escolha a qualidade:', ['HD', 'SD'])
-  
-  hd_file_url = file_links[1]
-  sd_file_url = file_links[0]
+  quality = xbmcgui.Dialog().select('Escolha a qualidade:', qualities)
   
   if quality == 0: 
     list_item = create_episode_list_item(html_code, hd_file_url)
@@ -242,6 +245,19 @@ def get_page_number_from_url(url):
       return url_splited[i+1]
       
   return 1
+  
+def get_random_anime_url():
+  animes_url = base_url + '/anime/letra/' + random.choice(string.ascii_uppercase)
+  
+  html_code = open_url(animes_url)
+  
+  anime_elements = re.compile('<a href="(.+?)" class="list-group-item"><span class="badge">(.+?)</span>.+?</li></a>').findall(html_code)
+  
+  while True:
+    anime = random.choice(anime_elements)
+    
+    if anime[1] != '0':
+      return base_url + anime[0]
   
 def create_episode_list_item(html_code, url):
   soup = BeautifulSoup(html_code, 'html.parser')
@@ -422,5 +438,6 @@ elif mode == 5: list_anime_initials(url, icons_folder + 'sort.png', 'legendados'
 elif mode == 6: list_episodes(url, wall_view, recent_episodes_mode)
 #elif mode == 7: list_anime_initials(url, icons_folder + 'dubbed.png', 'dublados') 
 elif mode == 8: list_animes(url) 
+elif mode == 9: random_anime() 
 
 xbmcplugin.endOfDirectory(__handle__)
