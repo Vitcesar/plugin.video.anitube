@@ -2,40 +2,38 @@
 
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-**Atenção:** Em versões anteriores a 16-Jun-18 a reprodução dos vídeos não funciona. Por favor atualizar para a mais recente.
-
-[AniTube Brasil](http://anitubebr.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
-Este addon foi corrigido a atualizado a partir da versão dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
+[AniTube Brasil](http://anitubebr.biz/) Ã© um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graÃ§a.
+Este addon foi corrigido a atualizado a partir da versÃ£o dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
 
 ## Funcionalidades
-* Ver últimos episódios lançados.
-* Procurar animes por letra inicial, por género ou por termo de pesquisa.
-* Consultar sinopse e outras informações.
-* Escolher entre reprodução HD ou SD.
+* Ver Ãºltimos episÃ³dios lanÃ§ados.
+* Procurar animes por letra inicial, por gÃ©nero ou por termo de pesquisa.
+* Consultar sinopse e outras informaÃ§Ãµes.
+* Escolher entre reproduÃ§Ã£o HD ou SD.
 
-## Instalação
-* A partir da página principal no GitHub descarregar o zip.
-* Abrir o Kodi e ir até Addons.
+## InstalaÃ§Ã£o
+* A partir da pÃ¡gina principal no GitHub descarregar o zip.
+* Abrir o Kodi e ir atÃ© Addons.
 * Clicar no icon da caixinha tipo Dropbox.
-* Selecionar opção para instalar a partir de um ficheiro zip.
+* Selecionar opÃ§Ã£o para instalar a partir de um ficheiro zip.
 * Escolher o ficheiro zip.
 
 ### Nota
-* Atualizações futuras terão que ser instaladas manualmente.
+* AtualizaÃ§Ãµes futuras terÃ£o que ser instaladas manualmente.
 
 ## Donativos
-Este Addon é gratuito e assim permanecerá, no entanto, se quiser apoiar a sua manutenção e possíveis novas funcionalidades, aqui ficam os endereços:
+Este Addon Ã© gratuito e assim permanecerÃ¡, no entanto, se quiser apoiar a sua manutenÃ§Ã£o e possÃ­veis novas funcionalidades, aqui ficam os endereÃ§os:
 * Bitcoin: 148oqXCS4xDaogRXXjXAUgtGzqtrXVkrbJ
 * Etherum: 0x1016aD873e39f7Fda8574dEB1571F731b381B58A
 
 ## Cuidado com os duplicados
 Existem pessoas que preferem copiar sob o seu nome em vez de usar o original. 
-Cuidado com esses duplicados, pois podem conter código malicioso. 
+Cuidado com esses duplicados, pois podem conter cÃ³digo malicioso. 
 Esse tipo de pessoas prejudica a comunidade OpenSource.
 
 ## To do
-* Permitir atualizações automáticas.
+* Permitir atualizaÃ§Ãµes automÃ¡ticas.
 
 ## Reportar erros ou bugs
-* Este addon tenta espelhar o melhor possível as funcionalidades do site Anitube Brasil. Nesse sentido, por vezes é possível que algumas coisas não funcionem no addon por não estarem a funcionar também no site.
-* Agradeço que quando algo não estiver a funcionar como suposto me avisem para eu averiguar o problema o mais depressa possível e corrigi-lo se for da minha competência. Podem fazê-lo abrindo uma [Issue](https://github.com/Vitcesar/plugin.video.anitube/issues) no GitHub, através do chat [Gitter](https://gitter.im/plugin-video-anitube/Lobby) ou por outro método, se o acharem mais apropriado.
+* Este addon tenta espelhar o melhor possÃ­vel as funcionalidades do site Anitube Brasil. Nesse sentido, por vezes Ã© possÃ­vel que algumas coisas nÃ£o funcionem no addon por nÃ£o estarem a funcionar tambÃ©m no site.
+* AgradeÃ§o que quando algo nÃ£o estiver a funcionar como suposto me avisem para eu averiguar o problema o mais depressa possÃ­vel e corrigi-lo se for da minha competÃªncia. Podem fazÃª-lo abrindo uma [Issue](https://github.com/Vitcesar/plugin.video.anitube/issues) no GitHub, atravÃ©s do chat [Gitter](https://gitter.im/plugin-video-anitube/Lobby) ou por outro mÃ©todo, se o acharem mais apropriado.
