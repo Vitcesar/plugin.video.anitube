@@ -1,19 +1,22 @@
-# [plugin.video.anitube](https://github.com/Vitcesar/plugin.video.anitube/) - AniTube addon para o Kodi
+# [plugin.video.anitube](https://github.com/Vitcesar/plugin.video.anitube/) - Anitube addon para o Kodi
 
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```diff
+- 2018-09-22 A trabalhar no regresso das restantes funcionalidades... Peço desculpa a todos pela demora.
++ 2018-09-22 Funcionalidade de lançamentos recentes corrigida e a funcionar.
+
 - 2018-08-11 Problema identificado ao tentar abrir os episódios. A trabalhar na resolução...
 ```
 
-[AniTube Brasil](http://anitubebr.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
+[Anitube](https://www.anitube.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
 Este addon foi corrigido a atualizado a partir da versão dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
 
 ## Funcionalidades
 * Ver últimos episódios lançados.
 * Procurar animes por letra inicial, por género ou por termo de pesquisa.
 * Consultar sinopse e outras informações.
-* Escolher entre reprodução HD ou SD.
+* Escolher entre reprodução HD ou SD (HD apenas quando disponível).
 
 ## Instalação
 * A partir da página principal no GitHub descarregar o zip.
@@ -39,5 +42,5 @@ Esse tipo de pessoas prejudica a comunidade OpenSource.
 * Permitir atualizações automáticas.
 
 ## Reportar erros ou bugs
-* Este addon tenta espelhar o melhor possível as funcionalidades do site Anitube Brasil. Nesse sentido, por vezes é possível que algumas coisas não funcionem no addon por não estarem a funcionar também no site.
+* Este addon tenta espelhar o melhor possível as funcionalidades do site Anitube. Nesse sentido, por vezes é possível que algumas coisas não funcionem no addon por não estarem a funcionar também no site.
 * Agradeço que quando algo não estiver a funcionar como suposto me avisem para eu averiguar o problema o mais depressa possível e corrigi-lo se for da minha competência. Podem fazê-lo abrindo uma [Issue](https://github.com/Vitcesar/plugin.video.anitube/issues) no GitHub, através do chat [Gitter](https://gitter.im/plugin-video-anitube/Lobby) ou por outro método, se o acharem mais apropriado.

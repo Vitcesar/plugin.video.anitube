@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata, random, string
+import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata, random, string, socket, requests
 from bs4 import BeautifulSoup
 from xbmcgui import ListItem
 
@@ -31,7 +31,7 @@ self_addon = xbmcaddon.Addon(id = addon_id)
 addon_folder = self_addon.getAddonInfo('path')
 icons_folder = addon_folder + '/resources/media/icons/'
 fanart = addon_folder + '/resources/fanart.jpg'
-base_url = 'http://anitubebr.com'
+base_url = 'https://www.anitube.biz'
 
 # Modes
 genres_mode = 1
@@ -55,13 +55,15 @@ wall_view = 'Container.SetViewMode(500)'
 fanart_view = 'Container.SetViewMode(502)'
 
 def main_menu():
-  add_dir('Recentes',   base_url + '/animes-lancamentos', recent_episodes_mode, icons_folder + 'new.png')
-  add_dir('Legendados', base_url + '/anime',              sort_subbed_mode,     icons_folder + 'sort.png')
-  add_dir('Géneros',    base_url + '/genero',             genres_mode,          icons_folder + 'genres.png')
-  add_dir('Dublados',   base_url + '/animes-dublado',     list_animes_mode,     icons_folder + 'dubbed.png')
-  add_dir('Tokusatsu',  base_url + '/tokusatsu',          list_animes_mode,     icons_folder + 'tokusatsu.png')
-  add_dir('Pesquisar',  base_url,                         search_mode,          icons_folder + 'search.png')
-  add_dir('Random',     base_url,                         random_anime_mode,    icons_folder + 'random.png')
+  add_dir('Lançamentos', base_url + '/categoria/lancamentos',       recent_episodes_mode, icons_folder + 'new.png')
+  #add_dir('Legendados',  base_url + '/categoria/animes-legendados', sort_subbed_mode,     icons_folder + 'sort.png')
+  #add_dir('Gêneros',     base_url + '/animes-por-generos',          genres_mode,          icons_folder + 'genres.png')
+  #add_dir('Dublados',    base_url + '/categoria/animes-dublados',   list_animes_mode,     icons_folder + 'dubbed.png')
+  #add_dir('Desenhos',    base_url + '/categoria/desenhos',          list_animes_mode,     icons_folder + 'cartoons.png')
+  #add_dir('Tokusatsus',  base_url + '/categoria/tokusatsus',        list_animes_mode,     icons_folder + 'tokusatsu.png')
+  #add_dir('Filmes',      base_url + '/categoria/filmes',            list_animes_mode,     icons_folder + 'movies.png')
+  #add_dir('Pesquisar',   base_url,                                  search_mode,          icons_folder + 'search.png')
+  #add_dir('Random',      base_url,                                  random_anime_mode,    icons_folder + 'random.png')
   
   xbmcplugin.setContent(__handle__,'tvshows')
   xbmc.executebuiltin(shift_view)
@@ -126,32 +128,21 @@ def list_episodes(url, view, mode):
   html_code = open_url(url)
   soup = BeautifulSoup(html_code, 'html.parser')
   
-  if get_page_number_from_url(url) == '1':
-    try:
-      list_item = create_anime_list_item(html_code)
-      add_link(None, list_item)
-    except IndexError: pass
-  
-  episodes = soup.find_all('div', { 'class' : 'col-sm-6 col-md-4 col-lg-4' })
-  
-  if not episodes:
-    warning = soup.find_all('span', { 'class' : 'text-danger' })[0].string
-    add_dir('[COLOR grey]' + warning + '[/COLOR]', url, list_episodes_mode, icons_folder + 'info.png', False, 0, warning)
-  else:    
-    for episode in episodes:
-      episode_url = base_url + episode.a['href']
-      title = episode.a.img['title']
-      img = episode.a.img['src']
-      
-      try: title = '[COLOR red]' + episode.find_all('div', { 'class' : 'label-private' })[0].string + '[/COLOR] ' + title
-      except IndexError: pass
+  main_box = soup.find_all('div', { 'class' : 'mainBox' })[0]
+  episodes = main_box.find_all('li', { 'class' : 'mainList' })
+ 
+  for episode in episodes:
+    episode_url = episode.div.a['href']
+    title = episode.div.a['title']
     
-      if 'http' not in img:
-        img = base_url + img
+    img = episode.div.img['src']
+    if 'http' not in img:
+      img = base_url + img
+    #xbmcgui.Dialog().textviewer('img', img)
       
-      add_dir(title, episode_url, resolve_episode_mode, img, True, 1, title, is_episode = True)
+    add_dir(title, episode_url, resolve_episode_mode, img, True, 1, title, is_episode = True)
     
-  add_paging(soup, url, mode)
+  add_paging(html_code, url, mode)
   
   xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(view) 
@@ -184,101 +175,99 @@ def random_anime():
     
 def resolve_episode(episode_page_url):
   html_code = open_url(episode_page_url)
+  soup = BeautifulSoup(html_code, 'html.parser')
   
-  script_src = re.compile('<br>\n<script type="text/javascript" src="(.+?)"></script>').findall(html_code)
+  plugin_mestre = soup.find(id = 'pluginMestre')
+  players = plugin_mestre.find_all('li')
   
-  for script_url in script_src:
-    script_code = open_url(script_url)
-    file_links = re.compile("source: '(.+?)'").findall(script_code)
-    
-  qualities = []
+  distinct_urls = []
   
-  try: 
-    hd_file_url = file_links[1]
-    hd_file_url = re.sub('\.m3u8.*', '.m3u8', hd_file_url)
-    hd_file_url = hd_file_url + '|Referer=' + base_url
+  for player in players:
+    div_id = player.a['href'].strip('#')
     
-    list_item = create_episode_list_item(html_code, hd_file_url)
-    list_item.setLabel('[COLOR blue]HD[/COLOR] ' + list_item.getLabel())
+    player_div = soup.find(id = div_id)
+    video_url = re.compile('{"sources":\[{"src":"(.+?)","type":"').findall(player_div.div['data-item'].replace('\/', '/'))[0]
     
-    add_link(hd_file_url, list_item)
-  except IndexError: pass
-  
-  try:
-    sd_file_url = file_links[0]
-    sd_file_url = re.sub('\.m3u8.*', '.m3u8', sd_file_url)
-    sd_file_url = sd_file_url + '|Referer=' + base_url
+    if video_url in distinct_urls: continue
+    distinct_urls.append(video_url)
     
-    list_item = create_episode_list_item(html_code, sd_file_url)
-    list_item.setLabel('[COLOR blue]SD[/COLOR] ' + list_item.getLabel())
+    player_title = player.string
     
-    add_link(sd_file_url, list_item)
-  except IndexError: pass
+    list_item = create_episode_list_item(html_code, video_url)
+    list_item.setLabel('[COLOR blue]' + player_title + '[/COLOR] ' + list_item.getLabel())
+    add_link(video_url, list_item)
   
 ################################################
 #              Aux Methods                     #
 ################################################
 
 def open_url(url):
-	request = urllib2.Request(url)
-	request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0')
-	response = urllib2.urlopen(request)
-	link = response.read()
-	response.close()
-  
-	return link
+  html_code = requests.get(url).text
+  return html_code
     
-def add_paging(soup, url, mode):
-  pages = soup.find('div', { 'class' : 'hidden-xs center m-b--15' }).find_all('a')
-  
-  for page in pages:
-    if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Último'):
-      last_page = get_page_number_from_url(page['href'])
-      
-  if last_page == '1': return
+def add_paging(html_code, url, mode):
+  soup = BeautifulSoup(html_code, 'html.parser')
 
-  current_page = get_page_number_from_url(url)
+  pages_div = soup.find('div', { 'class' : 'wp-pagenavi' })
   
-  for page in pages:
-    if page.string == 'Primeiro':
-      if current_page == '1':
-        is_folder = False
-        title = '[COLOR grey]<< Primeira Página (' + current_page + '/' + last_page + ')[/COLOR]'
-      else:
-        is_folder = True
-        title = '<< Primeira Página ([COLOR blue]' + current_page + '/' + last_page + '[/COLOR])'
-        
-      add_dir(title, base_url + page['href'], mode, icons_folder + 'prev.png', is_folder, 1, 'Voltar para a primeira página.')
+  pages_span = pages_div.find('span', { 'class' : 'pages' })
+  last_page_number = re.compile('P.gina .* de (.*)').findall(pages_span.text)[0]
+  if last_page_number == '1': return
+  
+  last_page_element = pages_div.find('a', { 'class' : 'last' })
+  if not last_page_element: last_page_url = get_url_from_page_number(url, last_page_number)
+  else: last_page_url = last_page_element['href']
+  
+  first_page_element = pages_div.find('a', { 'class' : 'first' })
+  if not first_page_element: first_page_url = get_url_from_page_number(url, '1')
+  else: first_page_url = first_page_element['href']
+  
+  current_page_number = pages_div.find('span', { 'class' : 'current' }).text
+  
+  previous_page_element = pages_div.find('a', { 'class' : 'previouspostslink' })
+  if not previous_page_element: previous_page_url = base_url
+  else: previous_page_url = previous_page_element['href']
+  
+  next_page_element = pages_div.find('a', { 'class' : 'nextpostslink' })
+  if not next_page_element: next_page_url = base_url
+  else: next_page_url = next_page_element['href']
+
+
+  if current_page_number == '1':
+    is_folder = False
+    title = '[COLOR grey]<< Primeira Página (' + str(current_page_number) + '/' + str(last_page_number) + ')[/COLOR]'
+  else:
+    is_folder = True
+    title = '<< Primeira Página ([COLOR blue]' + str(current_page_number) + '/' + str(last_page_number) + '[/COLOR])'
     
-    if page.string == 'Voltar':
-      if current_page == '1':
-        is_folder = False
-        title = '[COLOR grey]< Página Anterior (' + current_page + '/' + last_page + ')[/COLOR]'
-      else:
-        is_folder = True
-        title = '< Página Anterior ([COLOR blue]' + current_page + '/' + last_page + '[/COLOR])'
-      
-      add_dir(title, base_url + page['href'], mode, icons_folder + 'prev.png', is_folder, 1, 'Voltar para a página anterior.')
+  add_dir(title, first_page_url, mode, icons_folder + 'prev.png', is_folder, 1, 'Voltar para a primeira página.')
     
-    if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Avançar'):
-      if current_page == last_page:
-        is_folder = False
-        title = '[COLOR grey]Página Seguinte > (' + current_page + '/' + last_page + ')[/COLOR]'
-      else:
-        is_folder = True
-        title = 'Página Seguinte > ([COLOR blue]' + current_page + '/' + last_page + '[/COLOR])'
-      
-      add_dir(title, base_url + page['href'], mode, icons_folder + 'next.png', is_folder, 1, 'Avançar para a página seguinte.')
+  if current_page_number == '1':
+    is_folder = False
+    title = '[COLOR grey]< Página Anterior (' + str(current_page_number) + '/' + str(last_page_number) + ')[/COLOR]'
+  else:
+    is_folder = True
+    title = '< Página Anterior ([COLOR blue]' + str(current_page_number) + '/' + str(last_page_number) + '[/COLOR])'
+  
+  add_dir(title, previous_page_url, mode, icons_folder + 'prev.png', is_folder, 1, 'Voltar para a página anterior.')
     
-    if re.sub('[^A-Za-z0-9]+', '', page.string) == re.sub('[^A-Za-z0-9]+', '', 'Último'):
-      if current_page == last_page:
-        is_folder = False
-        title = '[COLOR grey]Última Página >> (' + current_page + '/' + last_page + ')[/COLOR]'
-      else:
-        is_folder = True
-        title = 'Última Página >> ([COLOR blue]' + current_page + '/' + last_page + '[/COLOR])'
-      
-      add_dir(title, base_url + page['href'], mode, icons_folder + 'next.png', is_folder, 1, 'Avançar para a última página.')
+  if current_page_number == last_page_number:
+    is_folder = False
+    title = '[COLOR grey]Página Seguinte > (' + str(current_page_number) + '/' + str(last_page_number) + ')[/COLOR]'
+  else:
+    is_folder = True
+    title = 'Página Seguinte > ([COLOR blue]' + str(current_page_number) + '/' + str(last_page_number) + '[/COLOR])'
+  
+  add_dir(title, next_page_url, mode, icons_folder + 'next.png', is_folder, 1, 'Avançar para a página seguinte.')
+    
+  if current_page_number == last_page_number:
+    is_folder = False
+    title = '[COLOR grey]Última Página >> (' + str(current_page_number) + '/' + str(last_page_number) + ')[/COLOR]'
+  else:
+    is_folder = True
+    title = 'Última Página >> ([COLOR blue]' + str(current_page_number) + '/' + str(last_page_number) + '[/COLOR])'
+  
+  add_dir(title, last_page_url, mode, icons_folder + 'next.png', is_folder, 1, 'Avançar para a última página.')
 
 def get_page_number_from_url(url):
   url_splited = url.split('/')
@@ -292,26 +281,35 @@ def get_page_number_from_url(url):
   if not page_number: return '1'
   else: return page_number
   
+def get_url_from_page_number(url, page_number):
+  url_splited = url.split('/')
+  
+  for i, string in enumerate(url_splited):
+    if string == 'page':
+      url_splited[i + 1] = page_number
+      break
+        
+  return '/'.join(url_splited)
+  
 def create_episode_list_item(html_code, url):
   soup = BeautifulSoup(html_code, 'html.parser')
-
-  title = soup.find_all('meta', { 'itemprop' : 'description' })[0]['content']
-  tvshowtitle = re.compile('<b>Categoria do Anime:</b> <a href=".+?" class="tag">(.+?)</a>').findall(html_code)[0]
-  dateadded = soup.find_all('meta', { 'itemprop' : 'uploadDate' })[0]['content']
-  genre = soup.find_all('meta', { 'itemprop' : 'genre' })[0]['content'].strip(',')
-  image = soup.find_all('meta', { 'itemprop' : 'thumbnailUrl' })[0]['content']
-  duration_seconds = soup.find_all('meta', { 'property' : 'video:duration' })[0]['content']
   
-  try: 
-    episode_number = int(title.split(' ')[-1])
-  except ValueError:
-    try:
-      episode_number = int(title.split(' ')[-2])
-    except (ValueError, IndexError):
-      episode_number = None
-      
-  try: season_number = re.compile('.+?\sS(\d)[\s$]').findall(title)[0]
-  except IndexError: season_number = 1
+  title_header = soup.find_all('h1', { 'class' : 'mainBoxHeader' })[0].text
+  title = re.compile('ANITUBE -(.+?) - Assistir Online').findall(title_header)[0]
+  
+  tvshowtitle = soup.find(property = 'article:section')['content']
+  
+  dateadded = soup.find_all('span', { 'itemprop' : 'uploadDate' })[0]['content']
+  
+  image = re.compile('background-image: url\((.+?)\);').findall(html_code)[0]
+  
+  #minutes = re.compile('<p>Dura.ao: <span>(.+?)m .+?s</span></p>').findall(html_code)[0]
+  #seconds = re.compile('<p>Dura.ao: <span>.+?m (.+?)s</span></p>').findall(html_code)[0]
+  #duration_seconds = int(minutes) * 60 + int(seconds)
+  duration_seconds = None
+  
+  try: episode_number = int(re.compile('Epis.dio (.+?):').findall(title)[0])
+  except IndexError: episode_number = int(re.compile('Epis.dio (.*)').findall(title)[0])
   
   list_item = xbmcgui.ListItem(title, path = url, thumbnailImage = image)
   list_item.setProperty('fanart_image', fanart)
@@ -319,12 +317,8 @@ def create_episode_list_item(html_code, url):
                               'tvshowtitle': tvshowtitle,
                               'originaltitle': title,
                               'sorttitle': title,
-                              'genre': genre,
-                              'tag': genre,
                               'episode': episode_number,
                               'sortepisode': episode_number,
-                              'season': season_number,
-                              'sortseason': season_number,
                               'duration': duration_seconds,
                               'dateadded': dateadded,
                               'mediatype': 'episode'
