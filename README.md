@@ -3,10 +3,7 @@
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```diff
-- 2018-09-22 A trabalhar no regresso das restantes funcionalidades... Peço desculpa a todos pela demora.
-+ 2018-09-22 Funcionalidade de lançamentos recentes corrigida e a funcionar.
-
-- 2018-08-11 Problema identificado ao tentar abrir os episódios. A trabalhar na resolução...
+- 2018-11-15 Sem disponibilidade atualmente para dedicar ao projeto. A partir de 3 de Dezembro voltarei ao desenvolvimento... Lamento o incómodo.
 ```
 
 [Anitube](https://www.anitube.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
