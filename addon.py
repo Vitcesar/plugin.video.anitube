@@ -129,13 +129,13 @@ def list_episodes(url, view, mode):
   soup = BeautifulSoup(html_code, 'html.parser')
   
   main_box = soup.find_all('div', { 'class' : 'mainBox' })[0]
-  episodes = main_box.find_all('li', { 'class' : 'mainList' })
+  episodes = main_box.find_all('div', { 'class' : 'videoThumb' })
  
   for episode in episodes:
-    episode_url = episode.div.a['href']
-    title = episode.div.a['title']
+    episode_url = episode.a['href']
+    title = episode.a['title']
     
-    img = episode.div.img['src']
+    img = episode.img['src']
     if 'http' not in img:
       img = base_url + img
     #xbmcgui.Dialog().textviewer('img', img)
@@ -177,21 +177,14 @@ def resolve_episode(episode_page_url):
   html_code = open_url(episode_page_url)
   soup = BeautifulSoup(html_code, 'html.parser')
   
-  plugin_mestre = soup.find(id = 'pluginMestre')
-  players = plugin_mestre.find_all('li')
-  
-  distinct_urls = []
-  
+  players = soup.find_all('div', { 'class' : 'GTTabs_divs' })
+    
   for player in players:
-    div_id = player.a['href'].strip('#')
+    video_url = player.video['src']
     
-    player_div = soup.find(id = div_id)
-    video_url = re.compile('{"sources":\[{"src":"(.+?)","type":"').findall(player_div.div['data-item'].replace('\/', '/'))[0]
+    if requests.get(video_url, stream=True).status_code == 404: continue
     
-    if video_url in distinct_urls: continue
-    distinct_urls.append(video_url)
-    
-    player_title = player.string
+    player_title = player.span.string
     
     list_item = create_episode_list_item(html_code, video_url)
     list_item.setLabel('[COLOR blue]' + player_title + '[/COLOR] ' + list_item.getLabel())
@@ -301,8 +294,8 @@ def create_episode_list_item(html_code, url):
   
   dateadded = soup.find_all('span', { 'itemprop' : 'uploadDate' })[0]['content']
   
-  image = re.compile('background-image: url\((.+?)\);').findall(html_code)[0]
-  
+  image = soup.find(itemprop = 'thumbnailUrl')['content']
+    
   #minutes = re.compile('<p>Dura.ao: <span>(.+?)m .+?s</span></p>').findall(html_code)[0]
   #seconds = re.compile('<p>Dura.ao: <span>.+?m (.+?)s</span></p>').findall(html_code)[0]
   #duration_seconds = int(minutes) * 60 + int(seconds)
