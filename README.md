@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```diff
++ 2018-12-08 Desenvolvimento retomado. Espero dar boas novidades brevemente.
 - 2018-11-15 Sem disponibilidade atualmente para dedicar ao projeto. A partir de 3 de Dezembro voltarei ao desenvolvimento... Lamento o incómodo.
 ```
 
