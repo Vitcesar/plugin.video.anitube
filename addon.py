@@ -31,7 +31,7 @@ self_addon = xbmcaddon.Addon(id = addon_id)
 addon_folder = self_addon.getAddonInfo('path')
 icons_folder = addon_folder + '/resources/media/icons/'
 fanart = addon_folder + '/resources/fanart.jpg'
-base_url = 'https://www.anitube.biz'
+base_url = 'https://www.anitube.xyz/'
 
 # Modes
 genres_mode = 1
@@ -56,7 +56,7 @@ fanart_view = 'Container.SetViewMode(502)'
 
 def main_menu():
   add_dir('Lançamentos', base_url + '/categoria/lancamentos',       recent_episodes_mode, icons_folder + 'new.png')
-  add_dir('Legendados',  base_url + '/categoria/animes-legendados', sort_subbed_mode,     icons_folder + 'sort.png')
+  #add_dir('Legendados',  base_url + '/categoria/animes-legendados', sort_subbed_mode,     icons_folder + 'sort.png')
   #add_dir('Gêneros',     base_url + '/animes-por-generos',          genres_mode,          icons_folder + 'genres.png')
   #add_dir('Dublados',    base_url + '/categoria/animes-dublados',   list_animes_mode,     icons_folder + 'dubbed.png')
   #add_dir('Desenhos',    base_url + '/categoria/desenhos',          list_animes_mode,     icons_folder + 'cartoons.png')
