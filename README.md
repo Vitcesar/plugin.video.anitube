@@ -1,4 +1,4 @@
-# [plugin.video.anitube](https://github.com/Vitcesar/plugin.video.anitube/) - Anitube addon para o Kodi
+# [plugin.video.anitube](https://github.com/Vitcesar/plugin.video.anitube/) - AniTube addon para o Kodi
 
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -7,27 +7,29 @@
 - 2018-11-15 Sem disponibilidade atualmente para dedicar ao projeto. A partir de 3 de Dezembro voltarei ao desenvolvimento... Lamento o incómodo.
 ```
 
-[Anitube](https://www.anitube.biz/) é um famoso site que oferece uma gigantesca biblioteca de animes para assistir online e de graça.
-Este addon foi corrigido a atualizado a partir da versão dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
+O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. 
+Depois do seu fim muitos outros sites assumiram o nome AniTube. 
+Agora é a vez deste nome estar associado a um addon para o Kodi.
+Este addon começou por ser desenvolvido a partir da versão dos autores hgarcia, eseffair e Mafarricos, presente no [SuperRepo](https://superrepo.org/kodi/addon/plugin.video.anitube/).
 
 ## Funcionalidades
-* Ver últimos episódios lançados.
-* Procurar animes por letra inicial, por género ou por termo de pesquisa.
+* Últimos episódios lançados.
+* Procurar animes por letra inicial e por género.
 * Consultar sinopse e outras informações.
-* Escolher entre reprodução HD ou SD (HD apenas quando disponível).
+* Anime aleatório. Não sabe o que assistir a seguir? Nós ajudamos!
 
 ## Instalação
 * A partir da página principal no GitHub descarregar o zip.
 * Abrir o Kodi e ir até Addons.
 * Clicar no icon da caixinha tipo Dropbox.
 * Selecionar opção para instalar a partir de um ficheiro zip.
-* Escolher o ficheiro zip.
+* Escolher o ficheiro zip descarregado.
 
 ### Nota
 * Atualizações futuras terão que ser instaladas manualmente.
 
 ## Donativos
-Este Addon é gratuito e assim permanecerá, no entanto, se quiser apoiar a sua manutenção e possíveis novas funcionalidades, aqui ficam os endereços:
+Este addon é gratuito e assim permanecerá, no entanto, se quiser apoiar a sua manutenção e possíveis novas funcionalidades, aqui ficam os endereços:
 * Bitcoin: 148oqXCS4xDaogRXXjXAUgtGzqtrXVkrbJ
 * Etherum: 0x1016aD873e39f7Fda8574dEB1571F731b381B58A
 
@@ -40,5 +42,4 @@ Esse tipo de pessoas prejudica a comunidade OpenSource.
 * Permitir atualizações automáticas.
 
 ## Reportar erros ou bugs
-* Este addon tenta espelhar o melhor possível as funcionalidades do site Anitube. Nesse sentido, por vezes é possível que algumas coisas não funcionem no addon por não estarem a funcionar também no site.
 * Agradeço que quando algo não estiver a funcionar como suposto me avisem para eu averiguar o problema o mais depressa possível e corrigi-lo se for da minha competência. Podem fazê-lo abrindo uma [Issue](https://github.com/Vitcesar/plugin.video.anitube/issues) no GitHub, através do chat [Gitter](https://gitter.im/plugin-video-anitube/Lobby) ou por outro método, se o acharem mais apropriado.
