@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata, random, string, base64, requests, io
+import urllib, urllib2, re, xbmcplugin, xbmcgui, xbmc, xbmcaddon, sys, time, unicodedata, random, string, base64, requests, io, datetime
 from bs4 import BeautifulSoup
 from zipfile import ZipFile
 from xbmcgui import ListItem
@@ -27,7 +27,7 @@ __handle__ = int(sys.argv[1])
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
-addon_id = 'plugin.video.anitube'
+addon_id = 'plugin.video.anitube-master'
 self_addon = xbmcaddon.Addon(id = addon_id)
 addon_folder = self_addon.getAddonInfo('path')
 icons_folder = addon_folder + '/resources/media/icons/'
@@ -57,9 +57,7 @@ wall_view = 'Container.SetViewMode(500)'
 fanart_view = 'Container.SetViewMode(502)'
 
 def main_menu():
-  #check_version()
-
-  xbmc.log('\n[VC_DEBUG] Folder: ' + addon_folder)
+  check_version()
   
   add_dir('Últimos Lançamentos', get_base_url(),                      recent_episodes_mode, icons_folder + 'new.png')
   add_dir('Animes',              get_base_url() + '/lista-de-animes', sort_subbed_mode,     icons_folder + 'sort.png')
@@ -156,37 +154,6 @@ def list_episodes(url, view, mode):
       
       add_dir(title, episode_url, resolve_episode_mode, img, True, 1, title, is_episode = True)
       
-  
-    '''
-  
-  if get_page_number_from_url(url) == '1':
-    try:
-      list_item = create_anime_list_item(html_code)
-      add_link(None, list_item)
-    except IndexError: pass
-  
-  episodes = soup.find_all('div', { 'class' : 'col-sm-6 col-md-4 col-lg-4' })
-  
-  if not episodes:
-    warning = soup.find_all('span', { 'class' : 'text-danger' })[0].string
-    add_dir('[COLOR grey]' + warning + '[/COLOR]', url, list_episodes_mode, icons_folder + 'info.png', False, 0, warning)
-  else:    
-    for episode in episodes:
-      episode_url = base_url + episode.a['href']
-      title = episode.a.img['title']
-      img = episode.a.img['src']
-      
-      try: title = '[COLOR red]' + episode.find_all('div', { 'class' : 'label-private' })[0].string + '[/COLOR] ' + title
-      except IndexError: pass
-    
-      if 'http' not in img:
-        img = base_url + img
-      
-      add_dir(title, episode_url, resolve_episode_mode, img, True, 1, title, is_episode = True)
-  
-  if mode != recent_episodes_mode:
-    add_paging(soup, url, mode)
-  '''
   xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(view) 
 
@@ -227,38 +194,6 @@ def resolve_episode(episode_page_url):
   
   list_item = create_episode_list_item(html_code, video_source, episode_id)
   add_link(video_source, list_item)
-  
-  '''
-  script_src = re.compile('<br>\n<script type="text/javascript" src="(.+?)"></script>').findall(html_code)
-  
-  for script_url in script_src:
-    script_code = open_url(script_url)
-    file_links = re.compile("source: '(.+?)'").findall(script_code)
-    
-  qualities = []
-  
-  try: 
-    hd_file_url = file_links[1]
-    hd_file_url = re.sub('\.m3u8.*', '.m3u8', hd_file_url)
-    hd_file_url = hd_file_url + '|Referer=' + base_url
-    
-    list_item = create_episode_list_item(html_code, hd_file_url)
-    list_item.setLabel('[COLOR blue]HD[/COLOR] ' + list_item.getLabel())
-    
-    add_link(hd_file_url, list_item)
-  except IndexError: pass
-  
-  try:
-    sd_file_url = file_links[0]
-    sd_file_url = re.sub('\.m3u8.*', '.m3u8', sd_file_url)
-    sd_file_url = sd_file_url + '|Referer=' + base_url
-    
-    list_item = create_episode_list_item(html_code, sd_file_url)
-    list_item.setLabel('[COLOR blue]SD[/COLOR] ' + list_item.getLabel())
-    
-    add_link(sd_file_url, list_item)
-  except IndexError: pass
-  '''
 
 ################################################
 #              Aux Methods                     #
@@ -316,7 +251,6 @@ def get_page_number_from_url(url):
   else: return page_number
   
 def create_episode_list_item(html_code, url, episode_id):
-  xbmc.log('\n VC_DEBUG ' + episode_id)
   soup = BeautifulSoup(html_code, 'html.parser')
 
   title = soup.head.title.text
@@ -335,19 +269,22 @@ def create_episode_list_item(html_code, url, episode_id):
   list_item.setProperty('fanart_image', fanart)
   list_item.setInfo('video', {'count' : episode_id,
                               'setid': episode_id,
+                              'tracknumber': episode_id,
                               'title': title,
                               'tvshowtitle': tvshowtitle,
                               'originaltitle': title,
                               'sorttitle': title,
-                              'genre': genre,
-                              'tag': genre,
+                              #'genre': genre,
+                              #'tag': genre,
                               'episode': episode_number,
                               'sortepisode': episode_number,
                               #'season': season_number,
                               #'sortseason': season_number,
-                              'duration': duration_seconds,
+                              #'duration': duration_seconds,
                               'dateadded': dateadded,
-                              'mediatype': 'episode'
+                              'mediatype': 'episode',
+                              'lastplayed': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                              'path': url
                              })
                             
   return list_item
@@ -402,11 +339,26 @@ def get_anime_from_episode_page(episode_page_url):
 def check_version():
   server_version = get_server_version()
   local_version = get_local_version()
-  #xbmc.log('\n[VC_DEBUG] Version: ' + local_version)
-  #xbmc.log('\n[VC_DEBUG] Version: ' + server_version)
+  xbmc.log('\n[VC_DEBUG] Local Version: ' + local_version)
+  xbmc.log('\n[VC_DEBUG] Server Version: ' + server_version)
   
-  #if server_version > local_version:
-  update_addon()
+  if server_version > local_version:
+    local_splited = local_version.split('.')
+    local_major = local_splited[0]
+    local_minor = local_splited[1]
+    local_patch = local_splited[-1]
+    
+    server_splited = server_version.split('.')
+    server_major = server_splited[0]
+    server_minor = server_splited[1]
+    server_patch = server_splited[-1]
+    
+    if server_major > local_major or server_minor > local_minor:
+      update_major()
+    elif server_patch > local_patch:
+      update_patch()
+
+    xbmcgui.Dialog().notification('AniTube', 'Add-on atualizado', addon_folder + '/resources/icon.png')
 
 def get_server_version():
   xml_code = open_url('https://raw.githubusercontent.com/Vitcesar/plugin.video.anitube/master/addon.xml')
@@ -420,12 +372,15 @@ def get_local_version():
   
   return soup.addon['version']
   
-def update_addon():
+def update_patch():
+  #TODO
+  return
+
+def update_major():
   master_zip = requests.get('https://github.com/Vitcesar/plugin.video.anitube/archive/master.zip')
   
   with ZipFile(io.BytesIO(master_zip.content), 'r') as zip:
-    xbmc.log('\n[VC_DEBUG] inside ')
-    zip.extractall('C:\Users\PWStation1\Desktop\plugin.video.anitube')
+    zip.extractall(addon_folder + '/..')
   
   return
 

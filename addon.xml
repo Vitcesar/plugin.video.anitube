@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.anitube-master" name="AniTube" version="1.90218" provider-name="VitC">
+<addon id="plugin.video.anitube-master" name="AniTube" version="1.0.190220" provider-name="VitC">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.requests" version="2.12.4" />
@@ -10,12 +10,12 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     
-    <summary lang="en">Addon AniTube</summary>
-    <description lang="en">O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. Depois do seu fim muitos outros sites assumiram o nome AniTube. Agora é a vez deste nome estar associado a um addon para o Kodi.</description>
+    <summary lang="en">Add-on AniTube</summary>
+    <description lang="en">O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. Depois do seu fim muitos outros sites assumiram o nome AniTube. Agora é a vez deste nome estar associado a um add-on para o Kodi.</description>
     <disclaimer lang="en">O autor não hospeda nem distribui nenhum dos conteúdos exibidos por este addon. O autor não possui nenhuma afiliação com o provedor do conteúdo.</disclaimer>
 		
-    <summary lang="pt">Addon AniTube</summary>
-    <description lang="pt">O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. Depois do seu fim muitos outros sites assumiram o nome AniTube. Agora é a vez deste nome estar associado a um addon para o Kodi.</description>
+    <summary lang="pt">Add-on AniTube</summary>
+    <description lang="pt">O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. Depois do seu fim muitos outros sites assumiram o nome AniTube. Agora é a vez deste nome estar associado a um add-on para o Kodi.</description>
     <disclaimer lang="pt">O autor não hospeda nem distribui nenhum dos conteúdos exibidos por este addon. O autor não possui nenhuma afiliação com o provedor do conteúdo.</disclaimer>
 		
     <source>https://github.com/vitcesar/plugin.video.anitube</source>
