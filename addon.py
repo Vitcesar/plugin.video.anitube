@@ -33,7 +33,7 @@ addon_folder = self_addon.getAddonInfo('path')
 icons_folder = addon_folder + '/resources/media/icons/'
 fanart = addon_folder + '/resources/fanart.jpg'
 ad_here = addon_folder + '/resources/pub.jpg'
-base_url = 'aHR0cHM6Ly93d3cuYW5pbWVzb3Jpb24uaW8='
+base_url = 'aHR0cHM6Ly93d3cuYW5pbWVzdmlzaW9uLm9ubGluZQ=='
 
 # Modes
 genres_mode = 1
@@ -81,15 +81,13 @@ def list_genres(url):
 def list_anime_initials(url):
   html_code = open_url(url)  
   soup = BeautifulSoup(html_code, 'html.parser')
-  
-  add_dir('#', get_base_url() + '/animes-com-numeros-ou-simbolos', list_animes_mode, ad_here, True, 1, 'Lista de animes começados por #.')
     
-  letters_div = soup.find('div', { 'class' : 'Letras' })
-  a_tags = letters_div.find_all('a')
+  letters_ul = soup.find('ul', { 'class' : 'az-list' })
+  a_tags = letters_ul.find_all('a')
   
   for letter in a_tags:
     if letter.text == 'All': continue
-    anime_list_url = get_base_url() + '/lista-de-animes' + letter['href']
+    anime_list_url = get_base_url() + letter['href']
     
     add_dir(letter.text, anime_list_url, list_animes_mode, ad_here, True, 1, 'Lista de animes começados por ' + letter.text + '.')
     
@@ -101,21 +99,20 @@ def list_animes(url):
   html_code = open_url(url)
   soup = BeautifulSoup(html_code, 'html.parser')
   
-  animes = soup.find_all('div', { 'class' : 'PostsItemImg' })
+  animes = soup.find('div', { 'class' : 'goblock category-list' }).find_all('li')
     
   for anime in animes:
     title = anime.a['title']
-    title = re.sub('Todos os Epis.dios Online', '', title)
-    title = re.sub('Todos os Epis.dios de ', '', title)
-    
-    anime_url = anime.a['href']
+    #title = re.sub('Todos os Epis.dios Online', '', title)
+        
+    anime_url = get_base_url() + anime.div.a['href']
     
     img = anime.a.img['src']
-    if 'fundososvideos.jpg' in img: img = addon_folder + '/resources/ani.png' # play safe
         
     add_dir(title, anime_url, list_episodes_mode, img)
-    
-  add_paging(soup, url, list_animes_mode)
+   
+  #TODO
+  #add_paging(soup, url, list_animes_mode)
 
   xbmcplugin.setContent(__handle__, 'tvshows')
   xbmc.executebuiltin(wide_list_view)
@@ -125,20 +122,17 @@ def list_episodes(url, view, mode):
   soup = BeautifulSoup(html_code, 'html.parser')
   
   if mode == recent_episodes_mode:
-    episodes = soup.find_all('div', { 'class' : 'PostsItemImg' })
+    episodes = soup.find('ul', { 'class' : 'ulclear grid-item grid-item-featured' }).find_all('li')
     
     for episode in episodes:
-      title = episode.a['title']      
-      if 'Episódio ' not in title: continue
-          
-      tvshowtitle = re.compile('(.*) Epis.dio \d+').findall(title)[0]
-      episode_number = re.compile('Epis.dio (\d+)').findall(title)[0]
-      title = '[COLOR crimson]Ep. ' + episode_number + '[/COLOR] ' + tvshowtitle
+      tvshowtitle = episode.a.img['alt']
       
-      episode_url = episode.a['href']
+      ep_num_div = episode.find('div', { 'class' : 'gr-eps' })
+      ep_number = re.compile('Epis.+dio (\d+)').findall(ep_num_div.text)[0]
       
+      title = '[COLOR crimson]Ep. ' + ep_number + '[/COLOR] ' + tvshowtitle
+      episode_url = get_base_url() + episode.find('div', { 'class' : 'item-detail' }).h2.a['href']
       img = episode.a.img['src']
-      if 'fundososvideos.jpg' in img: img = addon_folder + '/resources/ani.png'
       
       add_dir(title, episode_url, resolve_episode_mode, img, True, 1, title, is_episode = True)
   elif mode == list_episodes_mode:
@@ -184,15 +178,12 @@ def random_anime():
   list_episodes(url, list_view, list_episodes_mode)
     
 def resolve_episode(episode_page_url):
-  xbmc.log('\n VC_DEBUG - ' + url)
   html_code = open_url(episode_page_url)
-  soup = BeautifulSoup(html_code, 'html.parser')
+  #soup = BeautifulSoup(html_code, 'html.parser')
   
-  video_source = soup.find_all('source', { 'type' : 'video/mp4' })[0]['src']
+  video_source = re.compile('&hd=(.+)&fhd="').findall(html_code)[0]
   
-  episode_id = url.split('/')[-1]
-  
-  list_item = create_episode_list_item(html_code, video_source, episode_id)
+  list_item = create_episode_list_item(html_code, video_source)
   add_link(video_source, list_item)
 
 ################################################
@@ -250,39 +241,42 @@ def get_page_number_from_url(url):
   if not page_number: return '1'
   else: return page_number
   
-def create_episode_list_item(html_code, url, episode_id):
+def create_episode_list_item(html_code, url):
   soup = BeautifulSoup(html_code, 'html.parser')
 
-  title = soup.head.title.text
-  tvshowtitle = re.compile('(.*) Epis.dio \d+').findall(title)[0]
+  genres = soup.find(property = 'article:tag')['content'].split(',')
   dateadded = soup.find(property = 'article:published_time')['content']
-  image = soup.find(property = 'og:image')['content']
-  genre = 'Anime'
-  duration_seconds = 20 * 60
-  episode_number = re.compile('Episódio (\d+)').findall(html_code)[0]
-  season_number = 1
+  year = re.compile('Ano:</b> (\d+)').findall(html_code)[0]
+  director = re.compile('Direção:</b> (.+)</div>').findall(html_code)[0]
+  studio = re.compile('Estúdio:</b> (.+)</div>').findall(html_code)[0].split(',')
+  
+  ep_element = soup.find(id = 'current_episode_name').text
+  ep_number = re.compile('.*(\d+)').findall(ep_element)[0]
+  
+  img_element = soup.find('div', { 'class' : 'dc-thumb' }).img
+  image = img_element['src']
+  
+  tvshowtitle = soup.find('div', { 'class' : 'dc-thumb' }).img['title']
+  title = '[COLOR crimson]Ep. ' + ep_number + '[/COLOR] ' + tvshowtitle
 
-  list_item = xbmcgui.ListItem('[COLOR crimson]Ep. ' + episode_number + '[/COLOR] ' + tvshowtitle, path = url, thumbnailImage = ad_here)
+  list_item = xbmcgui.ListItem(title, path = url, thumbnailImage = ad_here)
   #list_item.setArt({ 'poster': 'poster.png', 'banner' : 'banner.png' })
   #[thumb, poster, banner, fanart, clearart, clearlogo, landscape, icon]
   
   list_item.setProperty('fanart_image', fanart)
-  list_item.setInfo('video', {'count' : episode_id,
-                              'setid': episode_id,
-                              'tracknumber': episode_id,
-                              'title': title,
+  list_item.setInfo('video', {'title': tvshowtitle,
                               'tvshowtitle': tvshowtitle,
-                              'originaltitle': title,
-                              'sorttitle': title,
-                              #'genre': genre,
-                              #'tag': genre,
-                              'episode': episode_number,
-                              'sortepisode': episode_number,
-                              #'season': season_number,
-                              #'sortseason': season_number,
-                              #'duration': duration_seconds,
+                              'originaltitle': tvshowtitle,
+                              'sorttitle': tvshowtitle,
+                              'genre': genres,
+                              'tag': genres,
+                              'episode': ep_number,
+                              'sortepisode': ep_number,
                               'dateadded': dateadded,
+                              'year': year,
                               'mediatype': 'episode',
+                              'director': director,
+                              'studio': studio,
                               'lastplayed': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                               'path': url
                              })
