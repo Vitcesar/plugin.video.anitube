@@ -3,7 +3,8 @@
 [![Join the chat at https://gitter.im/plugin-video-anitube/Lobby](https://badges.gitter.im/plugin-video-anitube/Lobby.svg)](https://gitter.im/plugin-video-anitube/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```diff
-+ 2019-02-19 Está em desenvolvimento uma versão um pouco renovada do nosso addon. Atualizações automáticas à vista... Tenham só um pouco de paciência.
+- 2019-07-13 Projeto suspenso! 
++ 2019-07-13 Procuro um site de animes que aceite partilhar o seu conteúdo e assim ajude a desenvolver este projeto que acho que tanta falta faz... 
 ```
 
 O AniTube foi um famoso site que ofereceu uma gigantesca biblioteca de animes para assistir online e de graça. 
